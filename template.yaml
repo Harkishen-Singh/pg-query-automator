@@ -1,0 +1,31 @@
+# First string formatting is always a schema, hence it is not a random.
+#
+# The file uses templating variables to make the queries easily reproducible
+# across multiple similar schemas.
+# {schema}. A schema name will be replaced here.
+# {r_str} (aka) random_str. A random string will be replaced here
+# {r_int} (aka) random_int. A random integer will be replaced here
+# {r_f}   (aka) random_float. A random float will be replaced here
+#
+# Additionally, a {execution_count} is available in every query field (i.e., insert/update/delete)
+# that can be used to calculate/insert ever increasing values, like for timeseries data.
+# The value of execution_count is incremented by 1 for any query execution for that table.
+# This finds incredible use-case in timeseries, example,
+# insert into recordings (timestamp, value) values
+#   ('2023-07-23 09:00:00' + '{execution_count} seconds' interval, {r_int});
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot be done by pgbench.
+- table: "{schema}.device"
+  queries:
+    insert: |
+      insert into {table} (name, location) values
+        ('Device name {r_str1}', 'Device location {r_str}'),
+        ('Device name {r_str}', 'Device location {r_str2}'),
+        ('Device name {r_str2}', 'Device location {r_str1}');
+    update: |
+      update {table} set
+        name = 'New name {r_str}',
+        location = 'New location {r_str}'
+      where id = (select id from {table} order by random() limit 1)
+    delete: |
+      delete from {table}
+        where id = (select id from {table} order by random() limit 1)
