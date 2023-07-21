@@ -14,6 +14,12 @@ is touched. See `template.yaml` for usage example.
 but the queries in the file will execute in 1 big transaction. We could technically wrap in `BEGIN;`, `END;` in the file
 so that pgbench runs queries in separate txns, but wrapping for thousands of queries is tedious.
 
+## Build
+Clone the repository on your system and ensure that Golang is installed. I compiled using `Go 1.20.5`. Then run
+```
+go build -o pg-query-automator *.go
+```
+
 ## Usage
 
 ```
