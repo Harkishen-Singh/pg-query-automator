@@ -19,7 +19,7 @@ func main() {
 	num_updates := flag.Int("num_updates", 100, "Number of update query txns to be executed per second.")
 	num_deletes := flag.Int("num_deletes", 100, "Number of delete query txns to be executed per second.")
 	conn_pool_min := flag.Int("pool_conn_min", 10, "Minimum number of connections in the pool.")
-	conn_pool_max := flag.Int("pool_conn_min", 100, "Maximum number of connections in the pool.")
+	conn_pool_max := flag.Int("pool_conn_max", 100, "Maximum number of connections in the pool.")
 	run_interval := flag.Duration("interval", time.Second, "Intervals in which all the txns will be repeated.")
 	level := flag.String("level", "info", "Log level to use from [ 'error', 'warn', 'info', 'debug' ].")
 	flag.Parse()
