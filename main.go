@@ -56,84 +56,90 @@ func main() {
 	defer ticker.Stop()
 	for range ticker.C {
 		insert_queries := make([]string, 0, *num_inserts)
-	out1:
-		for {
-			for i := 0; i < len(template); i++ {
-				r_str, r_str1, r_str2, r_int, r_f = RandomString(10), RandomString(10), RandomString(10), RandomInt(), RandomFloat()
-				execCount = template[i].GetExecutionCount()
-				table := stringFormatter.FormatComplex(template[i].Table, map[string]interface{}{"schema": schema})
-				query := stringFormatter.FormatComplex(template[i].Queries.Insert, map[string]interface{}{
-					"table":           table,
-					"schema":          schema,
-					"execution_count": execCount,
-					"r_str":           r_str,
-					"r_str1":          r_str1,
-					"r_str2":          r_str2,
-					"r_int":           r_int,
-					"r_f":             r_f,
-				})
-				template[i].SetExecutionCount(execCount + 1)
-				log.Debug("insert_query", query)
-				insert_queries = append(insert_queries, query)
-				if len(insert_queries) == *num_inserts {
-					break out1
+		if *num_inserts > 0 {
+		out1:
+			for {
+				for i := 0; i < len(template); i++ {
+					r_str, r_str1, r_str2, r_int, r_f = RandomString(10), RandomString(10), RandomString(10), RandomInt(), RandomFloat()
+					execCount = template[i].GetExecutionCount()
+					table := stringFormatter.FormatComplex(template[i].Table, map[string]interface{}{"schema": schema})
+					query := stringFormatter.FormatComplex(template[i].Queries.Insert, map[string]interface{}{
+						"table":           table,
+						"schema":          schema,
+						"execution_count": execCount,
+						"r_str":           r_str,
+						"r_str1":          r_str1,
+						"r_str2":          r_str2,
+						"r_int":           r_int,
+						"r_f":             r_f,
+					})
+					template[i].SetExecutionCount(execCount + 1)
+					log.Debug("insert_query", query)
+					insert_queries = append(insert_queries, query)
+					if len(insert_queries) >= *num_inserts {
+						break out1
+					}
 				}
 			}
 		}
 
 		update_queries := make([]string, 0, *num_updates)
-	out2:
-		for {
-			for i := 0; i < len(template); i++ {
-				r_str, r_str1, r_str2, r_int, r_f = RandomString(10), RandomString(10), RandomString(10), RandomInt(), RandomFloat()
-				execCount = template[i].GetExecutionCount()
-				table := stringFormatter.FormatComplex(template[i].Table, map[string]interface{}{"schema": schema})
-				query := stringFormatter.FormatComplex(template[i].Queries.Update, map[string]interface{}{
-					"table":           table,
-					"schema":          schema,
-					"execution_count": execCount,
-					"r_str":           r_str,
-					"r_str1":          r_str1,
-					"r_str2":          r_str2,
-					"r_int":           r_int,
-					"r_f":             r_f,
-				})
-				template[i].SetExecutionCount(execCount + 1)
-				log.Debug("update_query", query)
-				update_queries = append(update_queries, query)
-				if len(update_queries) == *num_updates {
-					break out2
+		if *num_updates > 0 {
+		out2:
+			for {
+				for i := 0; i < len(template); i++ {
+					r_str, r_str1, r_str2, r_int, r_f = RandomString(10), RandomString(10), RandomString(10), RandomInt(), RandomFloat()
+					execCount = template[i].GetExecutionCount()
+					table := stringFormatter.FormatComplex(template[i].Table, map[string]interface{}{"schema": schema})
+					query := stringFormatter.FormatComplex(template[i].Queries.Update, map[string]interface{}{
+						"table":           table,
+						"schema":          schema,
+						"execution_count": execCount,
+						"r_str":           r_str,
+						"r_str1":          r_str1,
+						"r_str2":          r_str2,
+						"r_int":           r_int,
+						"r_f":             r_f,
+					})
+					template[i].SetExecutionCount(execCount + 1)
+					log.Debug("update_query", query)
+					update_queries = append(update_queries, query)
+					if len(update_queries) >= *num_updates {
+						break out2
+					}
 				}
 			}
 		}
 
 		delete_queries := make([]string, 0, *num_deletes)
-	out3:
-		for {
-			for i := 0; i < len(template); i++ {
-				r_str, r_str1, r_str2, r_int, r_f = RandomString(10), RandomString(10), RandomString(10), RandomInt(), RandomFloat()
-				execCount = template[i].GetExecutionCount()
-				table := stringFormatter.FormatComplex(template[i].Table, map[string]interface{}{"schema": schema})
-				query := stringFormatter.FormatComplex(template[i].Queries.Delete, map[string]interface{}{
-					"table":           table,
-					"schema":          schema,
-					"execution_count": execCount,
-					"r_str":           r_str,
-					"r_str1":          r_str1,
-					"r_str2":          r_str2,
-					"r_int":           r_int,
-					"r_f":             r_f,
-				})
-				template[i].SetExecutionCount(execCount + 1)
-				log.Debug("delete_query", query)
-				delete_queries = append(delete_queries, query)
-				if len(delete_queries) == *num_deletes {
-					break out3
+		if *num_deletes > 0 {
+		out3:
+			for {
+				for i := 0; i < len(template); i++ {
+					r_str, r_str1, r_str2, r_int, r_f = RandomString(10), RandomString(10), RandomString(10), RandomInt(), RandomFloat()
+					execCount = template[i].GetExecutionCount()
+					table := stringFormatter.FormatComplex(template[i].Table, map[string]interface{}{"schema": schema})
+					query := stringFormatter.FormatComplex(template[i].Queries.Delete, map[string]interface{}{
+						"table":           table,
+						"schema":          schema,
+						"execution_count": execCount,
+						"r_str":           r_str,
+						"r_str1":          r_str1,
+						"r_str2":          r_str2,
+						"r_int":           r_int,
+						"r_f":             r_f,
+					})
+					template[i].SetExecutionCount(execCount + 1)
+					log.Debug("delete_query", query)
+					delete_queries = append(delete_queries, query)
+					if len(delete_queries) >= *num_deletes {
+						break out3
+					}
 				}
 			}
 		}
 
-		total := len(insert_queries)+len(update_queries)+len(delete_queries)
+		total := len(insert_queries) + len(update_queries) + len(delete_queries)
 		log.Debug("total_query_txns_to_be_executed", total)
 		var wg sync.WaitGroup
 		wg.Add(total)
@@ -151,7 +157,7 @@ func main() {
 		run(insert_queries)
 		run(update_queries)
 		run(delete_queries)
-		go func(start time.Time)  {
+		go func(start time.Time) {
 			wg.Wait()
 			totalTimeTaken := time.Since(start)
 			log.Info("msg", "batch complete", "time_taken", totalTimeTaken.String())
