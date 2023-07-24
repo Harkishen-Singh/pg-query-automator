@@ -18,6 +18,8 @@ func main() {
 	num_inserts := flag.Int("num_inserts", 100, "Number of insert query txns to be executed per second.")
 	num_updates := flag.Int("num_updates", 100, "Number of update query txns to be executed per second.")
 	num_deletes := flag.Int("num_deletes", 100, "Number of delete query txns to be executed per second.")
+	conn_pool_min := flag.Int("pool_conn_min", 10, "Minimum number of connections in the pool.")
+	conn_pool_max := flag.Int("pool_conn_min", 100, "Maximum number of connections in the pool.")
 	run_interval := flag.Duration("interval", time.Second, "Intervals in which all the txns will be repeated.")
 	level := flag.String("level", "info", "Log level to use from [ 'error', 'warn', 'info', 'debug' ].")
 	flag.Parse()
@@ -38,7 +40,7 @@ func main() {
 		schema = "public"
 	}
 
-	conn := getPgxPool(dbUri)
+	conn := getPgxPool(dbUri, int32(*conn_pool_min), int32(*conn_pool_max))
 	defer conn.Close()
 	testConn(conn)
 
@@ -158,10 +160,16 @@ func main() {
 	}
 }
 
-func getPgxPool(uri *string) *pgxpool.Pool {
-	dbpool, err := pgxpool.New(context.Background(), *uri)
+func getPgxPool(uri *string, min, max int32) *pgxpool.Pool {
+	cfg, err := pgxpool.ParseConfig(*uri)
 	if err != nil {
-		log.Fatal("Unable to connect to database: %v", err)
+		log.Fatal("Error parsing config", err.Error())
+	}
+	cfg.MinConns = min
+	cfg.MaxConns = max
+	dbpool, err := pgxpool.NewWithConfig(context.Background(), cfg)
+	if err != nil {
+		log.Fatal("Unable to connect to database", err.Error())
 	}
 	log.Info("msg", "connected to the database")
 	return dbpool
