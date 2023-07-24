@@ -2,10 +2,11 @@
 #
 # The file uses templating variables to make the queries easily reproducible
 # across multiple similar schemas.
-# {schema}. A schema name will be replaced here.
-# {r_str} (aka) random_str. A random string will be replaced here
-# {r_int} (aka) random_int. A random integer will be replaced here
-# {r_f}   (aka) random_float. A random float will be replaced here
+#
+# {schema}                  => A schema name will be replaced here.
+# {r_str} (aka) random_str  => A random string will be replaced here
+# {r_int} (aka) random_int  => A random integer will be replaced here
+# {r_f}   (aka) random_float => A random float will be replaced here
 #
 # Additionally, a {execution_count} is available in every query field (i.e., insert/update/delete)
 # that can be used to calculate/insert ever increasing values, like for timeseries data.
@@ -14,6 +15,8 @@
 # insert into recordings (timestamp, value) values
 #   ('2023-07-23 09:00:00' + '{execution_count} seconds' interval, {r_int});
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot be done by pgbench.
+
+# Queries.
 - table: "{schema}.device"
   queries:
     insert: |
