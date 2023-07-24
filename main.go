@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"strings"
 	"sync"
 	"time"
 
@@ -73,6 +74,7 @@ func main() {
 						"r_int":           r_int,
 						"r_f":             r_f,
 					})
+					query = strings.ReplaceAll(query, "\n", " ")
 					template[i].SetExecutionCount(execCount + 1)
 					log.Debug("insert_query", query)
 					insert_queries = append(insert_queries, query)
@@ -101,6 +103,7 @@ func main() {
 						"r_int":           r_int,
 						"r_f":             r_f,
 					})
+					query = strings.ReplaceAll(query, "\n", " ")
 					template[i].SetExecutionCount(execCount + 1)
 					log.Debug("update_query", query)
 					update_queries = append(update_queries, query)
@@ -129,6 +132,7 @@ func main() {
 						"r_int":           r_int,
 						"r_f":             r_f,
 					})
+					query = strings.ReplaceAll(query, "\n", " ")
 					template[i].SetExecutionCount(execCount + 1)
 					log.Debug("delete_query", query)
 					delete_queries = append(delete_queries, query)
