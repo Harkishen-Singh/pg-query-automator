@@ -29,7 +29,7 @@ func RandomString(length int) string {
 func RandomInt() int64 {
 	mu.Lock()
 	defer mu.Unlock()
-	return int64(r.Intn(1_000_000))
+	return int64(r.Intn(1_000))
 }
 
 func RandomFloat() float64 {

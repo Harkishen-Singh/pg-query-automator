@@ -23,7 +23,27 @@ go build -o pg-query-automator *.go
 ## Usage
 
 ```
-./pg-query-automator --help
+Usage of ./pg-query-automator:
+  -db_uri string
+        The database URI to connect to.
+  -interval duration
+        Intervals in which all the txns will be repeated. (default 1s)
+  -level string
+        Log level to use from [ 'error', 'warn', 'info', 'debug' ]. (default "info")
+  -num_deletes int
+        Number of delete query txns to be executed per second. (default 100)
+  -num_inserts int
+        Number of insert query txns to be executed per second. (default 100)
+  -num_updates int
+        Number of update query txns to be executed per second. (default 100)
+  -pool_conn_max int
+        Maximum number of connections in the pool. (default 20)
+  -pool_conn_min int
+        Minimum number of connections in the pool. (default 10)
+  -schema string
+        Schema of the table. This will fill the {schema} in the template. If you have same tables across multiple schemas, you can list those schemas separated by commas *without any space*. Eg: -schemas=iot_1,iot_2,iot_3 . The query loop will fill these schemas in {schema} based on the number of queries requested.
+  -template_path string
+        Path of the template file that contains queries. (default "template.yaml")
 ```
 
 See `template.yaml` for examples on how to use.

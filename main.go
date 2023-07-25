@@ -15,12 +15,14 @@ import (
 func main() {
 	dbUri := flag.String("db_uri", "", "The database URI to connect to.")
 	templatePath := flag.String("template_path", "template.yaml", "Path of the template file that contains queries.")
-	schemaPtr := flag.String("schema", "", "Schema of the table. This will fill the {schema} in the template.")
+	schemaPtr := flag.String("schema", "", "Schema of the table. This will fill the {schema} in the template. If you have "+
+		"same tables across multiple schemas, you can list those schemas separated by commas *without any space*. Eg: -schemas=iot_1,iot_2,iot_3 . "+
+		"The query loop will fill these schemas in {schema} based on the number of queries requested.")
 	num_inserts := flag.Int("num_inserts", 100, "Number of insert query txns to be executed per second.")
 	num_updates := flag.Int("num_updates", 100, "Number of update query txns to be executed per second.")
 	num_deletes := flag.Int("num_deletes", 100, "Number of delete query txns to be executed per second.")
 	conn_pool_min := flag.Int("pool_conn_min", 10, "Minimum number of connections in the pool.")
-	conn_pool_max := flag.Int("pool_conn_max", 100, "Maximum number of connections in the pool.")
+	conn_pool_max := flag.Int("pool_conn_max", 20, "Maximum number of connections in the pool.")
 	run_interval := flag.Duration("interval", time.Second, "Intervals in which all the txns will be repeated.")
 	level := flag.String("level", "info", "Log level to use from [ 'error', 'warn', 'info', 'debug' ].")
 	flag.Parse()
@@ -36,9 +38,16 @@ func main() {
 	if *dbUri == "" {
 		log.Fatal("Please provide a database URI using the -db_uri flag.")
 	}
-	schema := *schemaPtr
-	if schema == "" {
-		schema = "public"
+
+	schemas := []string{}
+	switch {
+	case *schemaPtr == "":
+		schemas = append(schemas, "public")
+	case strings.Contains(*schemaPtr, ","):
+		// Contains multiple schemas.
+		schemas = strings.Split(*schemaPtr, ",")
+	default:
+		schemas = append(schemas, *schemaPtr)
 	}
 
 	conn := getPgxPool(dbUri, int32(*conn_pool_min), int32(*conn_pool_max))
@@ -55,31 +64,33 @@ func main() {
 
 	ticker := time.NewTicker(*run_interval)
 	defer ticker.Stop()
-	for range ticker.C {
+	for {
 		insert_queries := make([]string, 0, *num_inserts)
 		if *num_inserts > 0 {
 		out1:
 			for {
-				for i := 0; i < len(template); i++ {
-					r_str, r_str1, r_str2, r_int, r_f = RandomString(10), RandomString(10), RandomString(10), RandomInt(), RandomFloat()
-					execCount = template[i].GetExecutionCount()
-					table := stringFormatter.FormatComplex(template[i].Table, map[string]interface{}{"schema": schema})
-					query := stringFormatter.FormatComplex(template[i].Queries.Insert, map[string]interface{}{
-						"table":           table,
-						"schema":          schema,
-						"execution_count": execCount,
-						"r_str":           r_str,
-						"r_str1":          r_str1,
-						"r_str2":          r_str2,
-						"r_int":           r_int,
-						"r_f":             r_f,
-					})
-					query = strings.ReplaceAll(query, "\n", " ")
-					template[i].SetExecutionCount(execCount + 1)
-					log.Debug("insert_query", query)
-					insert_queries = append(insert_queries, query)
-					if len(insert_queries) >= *num_inserts {
-						break out1
+				for _, schema := range schemas {
+					for i := 0; i < len(template); i++ {
+						r_str, r_str1, r_str2, r_int, r_f = RandomString(10), RandomString(10), RandomString(10), RandomInt(), RandomFloat()
+						execCount = template[i].GetExecutionCount()
+						table := stringFormatter.FormatComplex(template[i].Table, map[string]interface{}{"schema": schema})
+						query := stringFormatter.FormatComplex(template[i].Queries.Insert, map[string]interface{}{
+							"table":           table,
+							"schema":          schema,
+							"execution_count": execCount,
+							"r_str":           r_str,
+							"r_str1":          r_str1,
+							"r_str2":          r_str2,
+							"r_int":           r_int,
+							"r_f":             r_f,
+						})
+						query = strings.ReplaceAll(query, "\n", " ")
+						template[i].SetExecutionCount(execCount + 1)
+						log.Debug("insert_query", query)
+						insert_queries = append(insert_queries, query)
+						if len(insert_queries) >= *num_inserts {
+							break out1
+						}
 					}
 				}
 			}
@@ -89,26 +100,28 @@ func main() {
 		if *num_updates > 0 {
 		out2:
 			for {
-				for i := 0; i < len(template); i++ {
-					r_str, r_str1, r_str2, r_int, r_f = RandomString(10), RandomString(10), RandomString(10), RandomInt(), RandomFloat()
-					execCount = template[i].GetExecutionCount()
-					table := stringFormatter.FormatComplex(template[i].Table, map[string]interface{}{"schema": schema})
-					query := stringFormatter.FormatComplex(template[i].Queries.Update, map[string]interface{}{
-						"table":           table,
-						"schema":          schema,
-						"execution_count": execCount,
-						"r_str":           r_str,
-						"r_str1":          r_str1,
-						"r_str2":          r_str2,
-						"r_int":           r_int,
-						"r_f":             r_f,
-					})
-					query = strings.ReplaceAll(query, "\n", " ")
-					template[i].SetExecutionCount(execCount + 1)
-					log.Debug("update_query", query)
-					update_queries = append(update_queries, query)
-					if len(update_queries) >= *num_updates {
-						break out2
+				for _, schema := range schemas {
+					for i := 0; i < len(template); i++ {
+						r_str, r_str1, r_str2, r_int, r_f = RandomString(10), RandomString(10), RandomString(10), RandomInt(), RandomFloat()
+						execCount = template[i].GetExecutionCount()
+						table := stringFormatter.FormatComplex(template[i].Table, map[string]interface{}{"schema": schema})
+						query := stringFormatter.FormatComplex(template[i].Queries.Update, map[string]interface{}{
+							"table":           table,
+							"schema":          schema,
+							"execution_count": execCount,
+							"r_str":           r_str,
+							"r_str1":          r_str1,
+							"r_str2":          r_str2,
+							"r_int":           r_int,
+							"r_f":             r_f,
+						})
+						query = strings.ReplaceAll(query, "\n", " ")
+						template[i].SetExecutionCount(execCount + 1)
+						log.Debug("update_query", query)
+						update_queries = append(update_queries, query)
+						if len(update_queries) >= *num_updates {
+							break out2
+						}
 					}
 				}
 			}
@@ -118,26 +131,28 @@ func main() {
 		if *num_deletes > 0 {
 		out3:
 			for {
-				for i := 0; i < len(template); i++ {
-					r_str, r_str1, r_str2, r_int, r_f = RandomString(10), RandomString(10), RandomString(10), RandomInt(), RandomFloat()
-					execCount = template[i].GetExecutionCount()
-					table := stringFormatter.FormatComplex(template[i].Table, map[string]interface{}{"schema": schema})
-					query := stringFormatter.FormatComplex(template[i].Queries.Delete, map[string]interface{}{
-						"table":           table,
-						"schema":          schema,
-						"execution_count": execCount,
-						"r_str":           r_str,
-						"r_str1":          r_str1,
-						"r_str2":          r_str2,
-						"r_int":           r_int,
-						"r_f":             r_f,
-					})
-					query = strings.ReplaceAll(query, "\n", " ")
-					template[i].SetExecutionCount(execCount + 1)
-					log.Debug("delete_query", query)
-					delete_queries = append(delete_queries, query)
-					if len(delete_queries) >= *num_deletes {
-						break out3
+				for _, schema := range schemas {
+					for i := 0; i < len(template); i++ {
+						r_str, r_str1, r_str2, r_int, r_f = RandomString(10), RandomString(10), RandomString(10), RandomInt(), RandomFloat()
+						execCount = template[i].GetExecutionCount()
+						table := stringFormatter.FormatComplex(template[i].Table, map[string]interface{}{"schema": schema})
+						query := stringFormatter.FormatComplex(template[i].Queries.Delete, map[string]interface{}{
+							"table":           table,
+							"schema":          schema,
+							"execution_count": execCount,
+							"r_str":           r_str,
+							"r_str1":          r_str1,
+							"r_str2":          r_str2,
+							"r_int":           r_int,
+							"r_f":             r_f,
+						})
+						query = strings.ReplaceAll(query, "\n", " ")
+						template[i].SetExecutionCount(execCount + 1)
+						log.Debug("delete_query", query)
+						delete_queries = append(delete_queries, query)
+						if len(delete_queries) >= *num_deletes {
+							break out3
+						}
 					}
 				}
 			}
@@ -167,6 +182,8 @@ func main() {
 			log.Info("msg", "batch complete", "time_taken", totalTimeTaken.String())
 		}(start)
 		log.Info("msg", "scheduled_queries", "inserts", len(insert_queries), "updates", len(update_queries), "deletes", len(delete_queries))
+
+		<-ticker.C
 	}
 }
 
@@ -181,7 +198,6 @@ func getPgxPool(uri *string, min, max int32) *pgxpool.Pool {
 	if err != nil {
 		log.Fatal("Unable to connect to database", err.Error())
 	}
-	log.Info("msg", "connected to the database")
 	return dbpool
 }
 
@@ -190,5 +206,6 @@ func testConn(conn *pgxpool.Pool) bool {
 	if err := conn.QueryRow(context.Background(), "SELECT 1").Scan(&t); err != nil {
 		panic(err)
 	}
+	log.Info("msg", "connected to the database")
 	return true
 }
